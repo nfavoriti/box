@@ -60,7 +60,7 @@ def update_file(file_id, new_file_path):
 
 if __name__ == "__main__":
     desktop_path = os.path.expanduser("~/Desktop")
-    test_file_path = os.path.join(desktop_path, "test.rtf")  # Change to your actual filename if different
+    test_file_path = os.path.join(desktop_path, "test.rtf") 
 
     print("🔼 Uploading file...")
     upload_file(test_file_path)
