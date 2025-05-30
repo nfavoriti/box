@@ -2,10 +2,27 @@ import requests
 import os
 import json
 
-ACCESS_TOKEN = 'eUedV5ZCdxtdxFaPDetKDa4L1uR4cCf0'
+ACCESS_TOKEN = 'u2q5TSfBzmgDWc1utBnIUNSO2PHr03qu'
 HEADERS = {
     'Authorization': f'Bearer {ACCESS_TOKEN}'
 }
+
+def get_file_id_by_name(folder_id='0', target_filename='test.docx'):
+    url = f'https://api.box.com/2.0/folders/{folder_id}/items'
+    response = requests.get(url, headers=HEADERS)
+
+    if response.status_code == 200:
+        items = response.json().get('entries', [])
+        for item in items:
+            if item['type'] == 'file' and item['name'] == target_filename:
+                print(f"Found file: {item['name']} (ID: {item['id']})")
+                return item['id']
+        print(f"File '{target_filename}' not found in folder {folder_id}.")
+        return None
+    else:
+        print(f"Failed to list files: {response.status_code} - {response.text}")
+        return None
+
 
 # ---- 1. Upload a new file ----
 def upload_file(file_path, folder_id='0'):
@@ -60,7 +77,16 @@ def update_file(file_id, new_file_path):
 
 if __name__ == "__main__":
     desktop_path = os.path.expanduser("~/Desktop")
-    test_file_path = os.path.join(desktop_path, "test.rtf") 
+    test_file_path = os.path.join(desktop_path, "test_upload.rtf") 
 
     print("🔼 Uploading file...")
     upload_file(test_file_path)
+
+# if __name__ == "__main__":
+#     desktop_path = os.path.expanduser("~/Desktop")
+#     output_file_path = os.path.join(desktop_path, "test_downloaded.docx")
+    
+#     file_id = get_file_id_by_name(folder_id='0', target_filename='test.docx')
+    
+#     if file_id:
+#         download_file(file_id, output_file_path)
