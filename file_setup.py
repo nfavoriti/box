@@ -7,6 +7,7 @@ HEADERS = {
     'Authorization': f'Bearer {ACCESS_TOKEN}'
 }
 
+
 def get_file_id_by_name(folder_id='0', target_filename='test.docx'):
     url = f'https://api.box.com/2.0/folders/{folder_id}/items'
     response = requests.get(url, headers=HEADERS)
@@ -24,7 +25,6 @@ def get_file_id_by_name(folder_id='0', target_filename='test.docx'):
         return None
 
 
-# ---- 1. Upload a new file ----
 def upload_file(file_path, folder_id='0'):
     url = 'https://upload.box.com/api/2.0/files/content'
     file_name = os.path.basename(file_path)
@@ -46,7 +46,7 @@ def upload_file(file_path, folder_id='0'):
     else:
         print(f'Upload failed: {response.status_code} - {response.text}')
 
-# ---- 2. Download a file ----
+
 def download_file(file_id, output_path):
     url = f'https://api.box.com/2.0/files/{file_id}/content'
     response = requests.get(url, headers=HEADERS, stream=True)
@@ -59,7 +59,7 @@ def download_file(file_id, output_path):
     else:
         print(f'Error downloading: {response.text}')
 
-# ---- 3. Update (upload new version) ----
+
 def update_file(file_id, new_file_path):
     url = f'https://upload.box.com/api/2.0/files/{file_id}/content'
     file_name = new_file_path.split('/')[-1]
@@ -74,6 +74,33 @@ def update_file(file_id, new_file_path):
         print('File updated successfully.')
     else:
         print(f'Error updating file: {response.text}')
+
+
+def recursively_access_files(folder_id='0', local_base_path='box_downloads'):
+    os.makedirs(local_base_path, exist_ok=True)
+    
+    url = f'https://api.box.com/2.0/folders/{folder_id}/items'
+    response = requests.get(url, headers=HEADERS)
+    
+    if response.status_code != 200:
+        print(f"[ERROR] Failed to list folder {folder_id}: {response.status_code}")
+        return
+
+    items = response.json().get('entries', [])
+    
+    for item in items:
+        if item['type'] == 'folder':
+            # Recurse into subfolder
+            new_local_path = os.path.join(local_base_path, item['name'])
+            recursively_access_files(item['id'], new_local_path)
+        elif item['type'] == 'file':
+            local_file_path = os.path.join(local_base_path, item['name'])
+            if os.path.exists(local_file_path):
+                print(f"[SKIP] {item['name']} already exists in {local_base_path}")
+            else:
+                print(f"[⬇️  DOWNLOAD] {item['name']} to {local_file_path}")
+                download_file(item['id'], local_file_path)
+
 
 if __name__ == "__main__":
     desktop_path = os.path.expanduser("~/Desktop")
