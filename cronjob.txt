@@ -1,0 +1,1 @@
+0 2 * * * /usr/bin/python3 /Users/nickfavoriti/Desktop/work_code/file_code.py >> /Users/nickfavoriti/Desktop/work_code/file_code.log 2>&1
